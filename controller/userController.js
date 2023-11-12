@@ -52,17 +52,14 @@ class UserControl {
             if (!existingUser) {
                 res.status(404).json({ error: 'Email does not exist' });
             }
-            else if (existingUser.name !== name) {
-                res.status(401).json({ error: 'Username is incorrect' });
-            }
             else {
                 // Hash the new password before updating it in the database
                 const salt = await bcrypt.genSalt(12);
                 const hash = await bcrypt.hash(password, salt);
                 await userModel.updateOne(
-                    {email},
+                    { email },
                     {
-                        $set:{password:hash}
+                        $set: { password: hash }
                     }
                 )
                 res.status(200).json({ message: 'Password reset successful' });
@@ -70,6 +67,17 @@ class UserControl {
 
         } catch (err) {
             res.status(500).json({ error: 'Password reset failed' });
+        }
+    }
+
+    // function to hash confirm password
+    static hash_password = async (req, res) => {
+        const { password, saltRounds } = req.body;
+        try {
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            res.status(200).json({ hashedPassword });
+        } catch (err) {
+            res.status(500).json({ error: 'Password hashing failed' });
         }
     }
 }
